@@ -1,4 +1,4 @@
-Copyright 2019 Maciej Cąderek
+Copyright 2022 Julius Schmidt
 
 Permission to use, copy, modify, and/or distribute this software
 for any purpose with or without fee is hereby granted,
