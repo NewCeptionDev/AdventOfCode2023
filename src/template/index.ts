@@ -4,9 +4,9 @@ const prepareInput = (rawInput: string) => rawInput
 
 const taskInput = prepareInput(readInput())
 
-const goA = (input) => {}
+const goA = (input: string) => {}
 
-const goB = (input) => {}
+const goB = (input: string) => {}
 
 /* Tests */
 
