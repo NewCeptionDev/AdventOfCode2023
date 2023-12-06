@@ -42,7 +42,8 @@ const getCardScore = (card: Card): number => {
   return 0
 }
 
-const getMatchingNumbersCount = (card: Card): number => card.numbers.filter((num) => card.winningNumbers.includes(num)).length
+const getMatchingNumbersCount = (card: Card): number =>
+  card.numbers.filter((num) => card.winningNumbers.includes(num)).length
 
 const goA = (input: string) => {
   const lines = splitToLines(input)
