@@ -21,11 +21,11 @@ export const splitToLines = (input: string): string[]  => {
 }
 
 export const splitToAllLines = (input: string): string[]  => {
-  // if(/^win/.test(process.platform)){
-  //   return input.split("\r\n");
-  // } else {
+  if(/^win/.test(process.platform)){
+    return input.split("\r\n");
+  } else {
     return input.split("\n");
-  // }
+  }
 }
 
 export const readInputFromSpecialFile = (fileName: string) => {

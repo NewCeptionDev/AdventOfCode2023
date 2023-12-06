@@ -27,21 +27,21 @@ const parseRaces = (lines: string[]): Race[] => {
   }
 
   return durationParts.map((val, index) => ({
-      duration: val,
-      distance: distanceParts[index],
-    }))
+    duration: val,
+    distance: distanceParts[index],
+  }))
 }
 
 const parseRaceForPartTwo = (lines: string[]): Race => {
   const duration = parseInt(
     splitLine(lines[0])
-      .map((val) => `${val  }`)
+      .map((val) => `${val}`)
       .join(""),
     10
   )
   const distance = parseInt(
     splitLine(lines[1])
-      .map((val) => `${val  }`)
+      .map((val) => `${val}`)
       .join(""),
     10
   )
