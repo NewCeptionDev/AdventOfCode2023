@@ -1,13 +1,13 @@
 import { readInput, test } from "../utils/index"
-import { readInputFromSpecialFile, readTestFile, splitToAllLines } from "../utils/readInput"
+import { readTestFile, splitToAllLines } from "../utils/readInput"
 
 const prepareInput = (rawInput: string) => rawInput
 
 const taskInput = prepareInput(readInput())
 
 interface Point {
-  identifier: string,
-  left: string,
+  identifier: string
+  left: string
   right: string
 }
 
@@ -18,8 +18,81 @@ const parsePoint = (line: string): Point => {
   return {
     identifier: splitIdentifierInstructions[0],
     left: splitInstructions[0].substring(1),
-    right: splitInstructions[1].substring(0, splitInstructions[1].length - 1)
+    right: splitInstructions[1].substring(0, splitInstructions[1].length - 1),
   }
+}
+
+const findFirstRepentance = (
+  instructions: string[],
+  point: Point,
+  pointMap: Map<string, Point>
+): number => {
+  let lastSteps = 0
+  let currentPoint = point
+
+  let currentInstruction = 0
+  let steps = 0
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    currentPoint =
+      instructions[currentInstruction] === "L"
+        ? pointMap.get(currentPoint.left)
+        : pointMap.get(currentPoint.right)
+    currentInstruction++
+    steps++
+
+    if (currentPoint.identifier.endsWith("Z")) {
+      if (lastSteps !== 0) {
+        if (steps - lastSteps === lastSteps) {
+          return lastSteps
+        }
+        throw new Error("Should not happen")
+      } else {
+        lastSteps = steps
+      }
+    }
+
+    if (currentInstruction === instructions.length) {
+      currentInstruction = 0
+    }
+  }
+}
+
+const findSmallestCommonPart = (parts: number[]): number => {
+  const uniquePrimFactors = []
+  parts.forEach((part) => {
+    const primFactors = findPrimFactors(part)
+    primFactors.forEach((factor) => {
+      if (!uniquePrimFactors.includes(factor)) {
+        uniquePrimFactors.push(factor)
+      }
+    })
+  })
+
+  return uniquePrimFactors.reduce((previousValue, currentValue) => previousValue * currentValue, 1)
+}
+
+const findPrimFactors = (value: number): number[] => {
+  const parts = []
+
+  if (value === 1) {
+    return parts
+  }
+
+  let divider = 2
+  let currentValue = value
+  while (divider * divider <= currentValue) {
+    if (currentValue % divider === 0) {
+      parts.push(divider)
+      currentValue = currentValue / divider
+    } else {
+      divider++
+    }
+  }
+  parts.push(currentValue)
+
+  return parts
 }
 
 const goA = (input: string) => {
@@ -28,16 +101,20 @@ const goA = (input: string) => {
   const leftRightInstructions = lines[0].split("")
   const points = lines.slice(2).map(parsePoint)
 
-  let currentPoint = points.find(point => point.identifier === "AAA")
+  let currentPoint = points.find((point) => point.identifier === "AAA")
   let currentInstruction = 0
   let steps = 0
 
-  while(currentPoint.identifier !== "ZZZ") {
-    currentPoint = leftRightInstructions[currentInstruction] === "L" ? points.find(point => point.identifier === currentPoint.left) : points.find(point => point.identifier === currentPoint.right)
+  while (currentPoint.identifier !== "ZZZ") {
+    const currentVersion = currentPoint
+    currentPoint =
+      leftRightInstructions[currentInstruction] === "L"
+        ? points.find((point) => point.identifier === currentVersion.left)
+        : points.find((point) => point.identifier === currentVersion.right)
     currentInstruction++
     steps++
 
-    if(currentInstruction === leftRightInstructions.length) {
+    if (currentInstruction === leftRightInstructions.length) {
       currentInstruction = 0
     }
   }
@@ -45,53 +122,23 @@ const goA = (input: string) => {
   return steps
 }
 
-const findFirstRepentance = (instructions: string[], point: Point, pointMap: Map<string, Point>): number => {
-  let lastSteps = 0
-  let currentPoint = point
-
-  let currentInstruction = 0
-  let steps = 0
-
-  while(true) {
-    currentPoint = instructions[currentInstruction] === "L" ? pointMap.get(currentPoint.left) : pointMap.get(currentPoint.right)
-    currentInstruction++
-    steps++
-
-    if(currentPoint.identifier.endsWith("Z")) {
-        if(lastSteps !== 0) {
-          if(steps - lastSteps === lastSteps) {
-            return lastSteps
-          } else {
-            throw new Error("Should not happen")
-          }
-        } else {
-          lastSteps = steps
-        }
-      }
-
-    if(currentInstruction === instructions.length) {
-      currentInstruction = 0
-    }
-  }
-}
-
 const goB = (input: string) => {
   const lines = splitToAllLines(input)
 
   const leftRightInstructions = lines[0].split("")
   const points = lines.slice(2).map(parsePoint)
-  const pointMap = new Map<string, Point>
-  points.forEach(point => {
+  const pointMap = new Map<string, Point>()
+  points.forEach((point) => {
     pointMap.set(point.identifier, point)
   })
 
+  const currentPoints = points.filter((point) => point.identifier.endsWith("A"))
 
-  let currentPoints = points.filter(point => point.identifier.endsWith("A"))
+  const stepsPerPoint = currentPoints.map((point) =>
+    findFirstRepentance(leftRightInstructions, point, pointMap)
+  )
 
-  const stepsPerPoint = currentPoints.map(point => findFirstRepentance(leftRightInstructions, point, pointMap))
-
-  // Find smallest common multiple for stepsPerPoint
-  return 0
+  return findSmallestCommonPart(stepsPerPoint)
 }
 
 /* Tests */
