@@ -88,7 +88,8 @@ const getGalaxyPositions = (galaxyMap: string[][]) => {
   return galaxies
 }
 
-const calculateDistanceBetweenGalaxies = (galaxy1: Position, galaxy2: Position): number => Math.abs(galaxy2.x - galaxy1.x) + Math.abs(galaxy2.y - galaxy1.y)
+const calculateDistanceBetweenGalaxies = (galaxy1: Position, galaxy2: Position): number =>
+  Math.abs(galaxy2.x - galaxy1.x) + Math.abs(galaxy2.y - galaxy1.y)
 
 const calculateDistanceBetweenGalaxiesWithSpaces = (
   galaxy1: Position,

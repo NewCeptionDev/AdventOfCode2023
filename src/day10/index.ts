@@ -31,6 +31,7 @@ interface Point {
   rightPosition: Position | null
 }
 
+// Get all Positions from a direction that are startPoints for an area within the loop
 const getInnerPositions = (position: Position, innerDirection: InnerDirection): Position[] => {
   switch (innerDirection) {
     case InnerDirection.NORTH:
@@ -126,6 +127,7 @@ const getInnerPositions = (position: Position, innerDirection: InnerDirection): 
   }
 }
 
+// Identify Positions where the pipe is connected
 const identifyConnectedPointPositions = (pipeType: string, pos: Position): Position[] => {
   switch (pipeType) {
     case "|":
@@ -244,6 +246,7 @@ const getPoint = (pos: Position, pointMap: PointMap): Point | null => {
   return null
 }
 
+// Find loop by running through connected pipes until they meet or have no connection point
 const findLoop = (startPoint: Point, pointMap: PointMap): Point[] => {
   const loopPoints = []
   let lastPoints = []
@@ -303,6 +306,7 @@ const findLoop = (startPoint: Point, pointMap: PointMap): Point[] => {
   return []
 }
 
+// Returns all possible connections from the start point
 const findPossibleConnectionsFromStartPoint = (startPoint: Point, pointMap: PointMap): Point[] => {
   const surroundingPositions: Position[] = [
     {
@@ -362,6 +366,7 @@ const findPossibleConnectionsFromStartPoint = (startPoint: Point, pointMap: Poin
   return possibleConnectionPoints
 }
 
+// Checks all possible connections from the start point for a loop and returns it when found
 const findLoopFromStartPoint = (startPoint: Point, pointMap: PointMap): Point[] => {
   const possibleConnectionPoints = findPossibleConnectionsFromStartPoint(startPoint, pointMap)
 
@@ -399,6 +404,7 @@ const findLoopFromStartPoint = (startPoint: Point, pointMap: PointMap): Point[] 
   throw new Error("No Loop found")
 }
 
+// Identifies the correct pipe type for the start point based on the connected pipes
 const getCorrectIdentifier = (leftPoint: Point, rightPoint: Point): string => {
   if (leftPoint.pos.x === rightPoint.pos.x) {
     return "|"
@@ -484,6 +490,7 @@ const getCorrectIdentifier = (leftPoint: Point, rightPoint: Point): string => {
   throw new Error("Was not able to identify correct Identifier for Start Point")
 }
 
+// Returns all horizontally and vertically surrounding points
 const getSurroundingPoints = (currentPosition: Position, pointMap: PointMap): Point[] => {
   const surroundingPositions: Position[] = [
     {
@@ -519,6 +526,7 @@ const getSurroundingPoints = (currentPosition: Position, pointMap: PointMap): Po
   return points
 }
 
+// Finds and returns a complete area based on a start point and the loop as a border
 const findAllTilesWithinArea = (
   currentPoint: Point,
   loop: Point[],
@@ -566,6 +574,7 @@ const findAllTilesWithinArea = (
   return area
 }
 
+// Returns the new direction of the loops inner area based on the new point, the old point and the old direction
 const getNextInnerDirection = (
   newPoint: Point,
   lastInnerDirection: InnerDirection,
@@ -729,6 +738,7 @@ const getNextInnerDirection = (
   }
 }
 
+// Goes through all tiles and finds all tiles enclosed by loop. returns count of enclosed tiles
 const countTilesEnclosedByLoop = (loop: Point[], pointMap: PointMap): number => {
   const checkedEnclosed = []
 
