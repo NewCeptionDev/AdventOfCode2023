@@ -53,6 +53,40 @@ const getPossibleArrangements = (row: Row): number => {
   return valid
 }
 
+const allowQuestionMarkAsFirst = (row: Row): boolean => {
+  let isDamaged = false
+  for(let i = row.record.length - 1; i >= 0; i--) {
+    if(row.record[i] === "#") {
+      isDamaged = true
+    } else if(row.record[i] === "?") {
+      return true
+    } else if(row.record[i] === ".") {
+      return !isDamaged
+    }
+  }
+  return false
+}
+
+const getPossibleArrangementsForEnlargedRow = (row: Row): number => {
+  const firstRowEnlarged = {
+    record: row.record + "?",
+    damaged: row.damaged
+  }
+  const firstRow = getPossibleArrangements(firstRowEnlarged)
+  const middleRows = {
+    record: allowQuestionMarkAsFirst(row) ? "?" + row.record + "?" : row.record + "?",
+    damaged: row.damaged
+  }
+  const middleRow = getPossibleArrangements(middleRows)
+  const lastRowEnlarged = {
+    record: allowQuestionMarkAsFirst(row) ? "?" + row.record : row.record,
+    damaged: row.damaged
+  }
+  const lastRow = getPossibleArrangements(lastRowEnlarged)
+
+  return firstRow * (Math.pow(middleRow, 3)) * lastRow
+}
+
 const getNewPossibleArrangements = (row: Row) => {
   let generatedRows: RowState[] = [{
     currentDamagedRecord: 0,
@@ -191,7 +225,8 @@ const goA = (input: string) => {
 const goB = (input: string) => {
   const lines = splitToLines(input);
 
-  return lines.map(parseRow).map(unfoldRow).map(getNewPossibleArrangements).reduce((previousValue, currentValue) => previousValue + currentValue)
+  return lines.map(parseRow).map(getPossibleArrangementsForEnlargedRow).reduce((previousValue, currentValue) => previousValue + currentValue)
+
 }
 
 /* Tests */
