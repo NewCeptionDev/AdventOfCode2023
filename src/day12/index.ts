@@ -6,227 +6,93 @@ const prepareInput = (rawInput: string) => rawInput
 const taskInput = prepareInput(readInput())
 
 interface Row {
-  record: string,
+  record: string
   damaged: number[]
-}
-
-interface RowState {
-  currentDamagedIndex: number,
-  currentDamagedRecord: number,
-  rowDamaged: number[]
 }
 
 const parseRow = (line: string): Row => {
   const split = line.split(" ")
   return {
     record: split[0],
-    damaged: split[1].split(",").map(val => parseInt(val, 10))
+    damaged: split[1].split(",").map((val) => parseInt(val, 10)),
   }
 }
 
-const getPossibleArrangements = (row: Row): number => {
+const isStillPossible = (index: number, row: Row, currentGroup: number): boolean => {
+  const remainingRequiredValues = row.damaged
+    .slice(currentGroup)
+    .reduce((previousValue, currentValue) => previousValue + currentValue + 1, -1)
+  return row.record.length - index >= remainingRequiredValues
+}
 
-  let generatedRows = [row]
-  for(let i = 0; i < row.record.length; i++) {
-    let adjustedGeneratedRows = []
-    if(row.record[i] === "?") {
-      generatedRows.forEach(generated => {
-        adjustedGeneratedRows.push({
-            record: generated.record.slice(0, i) + "." + generated.record.slice(i + 1),
-            damaged: row.damaged
-          },
-          {
-            record: generated.record.slice(0, i) + "#" + generated.record.slice(i + 1),
-            damaged: row.damaged
-          })
-      })
-      generatedRows = adjustedGeneratedRows
+const canPlaceGroup = (row: Row, currentIndex: number, currentGroup: number): boolean => {
+  if (currentGroup >= row.damaged.length) {
+    return false
+  }
+
+  let placeable = true
+  for (let i = currentIndex; i < currentIndex + row.damaged[currentGroup] && placeable; i++) {
+    if (row.record.length - 1 < i || row.record[i] === ".") {
+      placeable = false
     }
   }
-  //
-  // console.log(row)
-  // console.log(generatedRows)
-
-  const valid = generatedRows.filter(isRowValid).length
-  // console.log(valid)
-  // console.log("...")
-  return valid
+  return (
+    placeable &&
+    (row.record.length === currentGroup + row.damaged[currentIndex] ||
+      row.record[currentIndex + row.damaged[currentGroup]] !== "#")
+  )
 }
 
-const allowQuestionMarkAsFirst = (row: Row): boolean => {
-  let isDamaged = false
-  for(let i = row.record.length - 1; i >= 0; i--) {
-    if(row.record[i] === "#") {
-      isDamaged = true
-    } else if(row.record[i] === "?") {
-      return true
-    } else if(row.record[i] === ".") {
-      return !isDamaged
-    }
-  }
-  return false
-}
-
-const getPossibleArrangementsForEnlargedRow = (row: Row): number => {
-  const firstRowEnlarged = {
-    record: row.record + "?",
-    damaged: row.damaged
-  }
-  const firstRow = getPossibleArrangements(firstRowEnlarged)
-  const middleRows = {
-    record: allowQuestionMarkAsFirst(row) ? "?" + row.record + "?" : row.record + "?",
-    damaged: row.damaged
-  }
-  const middleRow = getPossibleArrangements(middleRows)
-  const lastRowEnlarged = {
-    record: allowQuestionMarkAsFirst(row) ? "?" + row.record : row.record,
-    damaged: row.damaged
-  }
-  const lastRow = getPossibleArrangements(lastRowEnlarged)
-
-  return firstRow * (Math.pow(middleRow, 3)) * lastRow
-}
-
-const getNewPossibleArrangements = (row: Row) => {
-  let generatedRows: RowState[] = [{
-    currentDamagedRecord: 0,
-    currentDamagedIndex: 0,
-    rowDamaged: row.damaged
-  }]
-  for (let i = 0; i < row.record.length; i++) {
-    let adjustedGeneratedRows: RowState[] = []
-    if (row.record[i] === "?") {
-      generatedRows.forEach(generated => {
-        if (generated.currentDamagedRecord > 0) {
-          if (generated.currentDamagedIndex >= generated.rowDamaged.length) {
-            // console.log("removed for ?")
-            // do nothing
-          } else {
-            const required = generated.rowDamaged[generated.currentDamagedIndex]
-            if (generated.currentDamagedRecord === required) {
-              adjustedGeneratedRows.push({
-                currentDamagedRecord: 0,
-                currentDamagedIndex: generated.currentDamagedIndex + 1,
-                rowDamaged: row.damaged
-              })
-            } else {
-              adjustedGeneratedRows.push({
-                currentDamagedRecord: generated.currentDamagedRecord + 1,
-                currentDamagedIndex: generated.currentDamagedIndex,
-                rowDamaged: row.damaged
-              })
-            }
-          }
-        }
-
-        adjustedGeneratedRows.push({
-            currentDamagedRecord: 0,
-            currentDamagedIndex: generated.currentDamagedIndex,
-            rowDamaged: row.damaged
-          },
-          {
-            currentDamagedRecord: 1,
-            currentDamagedIndex: generated.currentDamagedIndex,
-            rowDamaged: row.damaged
-          })
-      })
-
-    } else if (row.record[i] === "#") {
-      generatedRows.forEach(generated => {
-        if (generated.currentDamagedIndex >= generated.rowDamaged.length) {
-          // console.log("removed for # and over")
-          // do nothing
-        } else {
-          const required = generated.rowDamaged[generated.currentDamagedIndex]
-          if (generated.currentDamagedRecord > required) {
-            // console.log("removed for # and local over")
-            // do nothing
-          } else {
-            adjustedGeneratedRows.push({
-              currentDamagedRecord: generated.currentDamagedRecord + 1,
-              currentDamagedIndex: generated.currentDamagedIndex,
-              rowDamaged: row.damaged
-            })
-          }
-        }
-      })
-    } else if(row.record[i] === ".") {
-      generatedRows.forEach(generated => {
-          const required = generated.rowDamaged[generated.currentDamagedIndex]
-          if (generated.currentDamagedRecord === 0) {
-            adjustedGeneratedRows.push({
-              currentDamagedRecord: 0,
-              currentDamagedIndex: generated.currentDamagedIndex,
-              rowDamaged: row.damaged
-            })
-          } else if(required === generated.currentDamagedRecord){
-            adjustedGeneratedRows.push({
-              currentDamagedRecord: 0,
-              currentDamagedIndex: generated.currentDamagedIndex + 1,
-              rowDamaged: row.damaged
-            })
-          }
-      })
-    }
-    generatedRows = adjustedGeneratedRows
-  }
-
-  return generatedRows.length
-}
-
-const isRowValid = (row: Row) => {
-  let continuousBroken = 0;
-  let currentDamagedRecord = 0
-  let valid = true
-
-  for(let i = 0; i < row.record.length && valid; i++) {
-    if(row.record[i] === "#") {
-      continuousBroken++
-    } else {
-      if(continuousBroken > 0 && (row.damaged.length <= currentDamagedRecord || row.damaged[currentDamagedRecord] !== continuousBroken)) {
-        valid = false;
-      } else if(continuousBroken > 0 && row.damaged[currentDamagedRecord] === continuousBroken) {
-        currentDamagedRecord++;
+const getPossibleArrangements = (
+  row: Row,
+  cache: Map<string, number>,
+  currentIndex: number,
+  currentGroup: number
+): number => {
+  if (currentIndex > row.record.length - 1) {
+    return currentGroup === row.damaged.length ? 1 : 0
+  } else if (!cache.has(`${currentIndex  };${  currentGroup}`)) {
+    let possibleArrangements = 0
+    if (isStillPossible(currentIndex, row, currentGroup)) {
+      if (canPlaceGroup(row, currentIndex, currentGroup)) {
+        possibleArrangements += getPossibleArrangements(
+          row,
+          cache,
+          currentIndex + row.damaged[currentGroup] + 1,
+          currentGroup + 1
+        )
       }
-      continuousBroken = 0
+      if (row.record[currentIndex] !== "#") {
+        possibleArrangements += getPossibleArrangements(row, cache, currentIndex + 1, currentGroup)
+      }
     }
+    cache.set(`${currentIndex  };${  currentGroup}`, possibleArrangements)
   }
-
-  if(continuousBroken > 0 && (row.damaged.length <= currentDamagedRecord || row.damaged[currentDamagedRecord] !== continuousBroken)) {
-    valid = false;
-  } else if(continuousBroken > 0 && row.damaged[currentDamagedRecord] === continuousBroken) {
-    currentDamagedRecord++;
-  }
-
-  return row.damaged.length === currentDamagedRecord && valid
+  return cache.get(`${currentIndex  };${  currentGroup}`)
 }
 
-const unfoldRow = (row: Row): Row => {
-  let record = ""
-  let damaged = []
-
-  for(let i = 0; i < 5; i++) {
-    record += row.record
-    damaged.push(...row.damaged)
-  }
-
-  return {
-    record,
-    damaged
-  }
-}
+const enlargeRow = (row: Row): Row => ({
+    record: [row.record, row.record, row.record, row.record, row.record].join("?"),
+    damaged: [...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged],
+  })
 
 const goA = (input: string) => {
-  const lines = splitToLines(input);
+  const lines = splitToLines(input)
 
-  return lines.map(parseRow).map(getPossibleArrangements).reduce((previousValue, currentValue) => previousValue + currentValue)
+  return lines
+    .map(parseRow)
+    .map((row) => getPossibleArrangements(row, new Map<string, number>(), 0, 0))
+    .reduce((previousValue, currentValue) => previousValue + currentValue)
 }
 
 const goB = (input: string) => {
-  const lines = splitToLines(input);
+  const lines = splitToLines(input)
 
-  return lines.map(parseRow).map(getPossibleArrangementsForEnlargedRow).reduce((previousValue, currentValue) => previousValue + currentValue)
-
+  return lines
+    .map(parseRow)
+    .map(enlargeRow)
+    .map((row) => getPossibleArrangements(row, new Map<string, number>(), 0, 0))
+    .reduce((previousValue, currentValue) => previousValue + currentValue)
 }
 
 /* Tests */
