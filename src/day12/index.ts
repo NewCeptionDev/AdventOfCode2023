@@ -51,7 +51,7 @@ const getPossibleArrangements = (
 ): number => {
   if (currentIndex > row.record.length - 1) {
     return currentGroup === row.damaged.length ? 1 : 0
-  } else if (!cache.has(`${currentIndex  };${  currentGroup}`)) {
+  } else if (!cache.has(`${currentIndex};${currentGroup}`)) {
     let possibleArrangements = 0
     if (isStillPossible(currentIndex, row, currentGroup)) {
       if (canPlaceGroup(row, currentIndex, currentGroup)) {
@@ -66,15 +66,15 @@ const getPossibleArrangements = (
         possibleArrangements += getPossibleArrangements(row, cache, currentIndex + 1, currentGroup)
       }
     }
-    cache.set(`${currentIndex  };${  currentGroup}`, possibleArrangements)
+    cache.set(`${currentIndex};${currentGroup}`, possibleArrangements)
   }
-  return cache.get(`${currentIndex  };${  currentGroup}`)
+  return cache.get(`${currentIndex};${currentGroup}`)
 }
 
 const enlargeRow = (row: Row): Row => ({
-    record: [row.record, row.record, row.record, row.record, row.record].join("?"),
-    damaged: [...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged],
-  })
+  record: [row.record, row.record, row.record, row.record, row.record].join("?"),
+  damaged: [...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged, ...row.damaged],
+})
 
 const goA = (input: string) => {
   const lines = splitToLines(input)
