@@ -1,91 +1,89 @@
 import { readInput, test } from "../utils/index"
-import {readTestFile, splitToLines} from "../utils/readInput";
+import { readTestFile, splitToLines } from "../utils/readInput"
 
 const prepareInput = (rawInput: string) => rawInput
 
 const taskInput = prepareInput(readInput())
 
-interface Element {
-    label: string,
-    lens: number
+interface Step {
+  label: string
+  lens: number
 }
 
 const calculateHash = (input: string): number => {
-    let hash = 0
-    for(let i = 0; i < input.length; i++) {
-        const ascii = input.charCodeAt(i);
-        hash += ascii
-        hash *= 17
-        hash = hash % 256
-    }
+  let hash = 0
+  for (let i = 0; i < input.length; i++) {
+    const ascii = input.charCodeAt(i)
+    hash += ascii
+    hash *= 17
+    hash = hash % 256
+  }
 
-    return hash
+  return hash
 }
 
-
-const parseElement = (line: string): Element => {
-    if(line.includes("=")) {
-        const split = line.split("=")
-        return {
-            label: split[0],
-            lens: parseInt(split[1], 10)
-        }
-    } else {
-        return {
-            label: line.substring(0, line.length - 1),
-            lens: null
-        }
+const parseStep = (line: string): Step => {
+  if (line.includes("=")) {
+    const split = line.split("=")
+    return {
+      label: split[0],
+      lens: parseInt(split[1], 10),
     }
+  }
+  return {
+    label: line.substring(0, line.length - 1),
+    lens: null,
+  }
 }
 
-const calculateFocusingPower = (hashMap: Map<number, Element[]>): number => {
-    let focusingPower = 0
+const calculateFocusingPower = (hashMap: Map<number, Step[]>): number => {
+  let focusingPower = 0
 
-    Array.from(hashMap.keys()).forEach(key => {
-        hashMap.get(key).forEach((element, index) => {
-            focusingPower += (key + 1) * (index + 1) * element.lens
-        })
+  Array.from(hashMap.keys()).forEach((key) => {
+    hashMap.get(key).forEach((element, index) => {
+      focusingPower += (key + 1) * (index + 1) * element.lens
     })
+  })
 
-    return focusingPower
+  return focusingPower
 }
 
 const goA = (input: string) => {
-    const lines = splitToLines(input)
-    return lines[0].split(",").map(calculateHash).reduce((previousValue, currentValue) => previousValue + currentValue)
+  const lines = splitToLines(input)
+  return lines[0]
+    .split(",")
+    .map(calculateHash)
+    .reduce((previousValue, currentValue) => previousValue + currentValue)
 }
 
 const goB = (input: string) => {
-    const lines = splitToLines(input)
+  const lines = splitToLines(input)
+  const hashMap = new Map<number, Step[]>()
+  const instructions = lines[0].split(",")
 
-    const hashMap = new Map<number, Element[]>()
+  instructions.forEach((instruction) => {
+    const element = parseStep(instruction)
+    const hash = calculateHash(element.label)
 
-    const instructions = lines[0].split(",")
+    if (!hashMap.has(hash)) {
+      hashMap.set(hash, [])
+    }
 
-    instructions.forEach(instruction => {
-        const element = parseElement(instruction)
-        const hash = calculateHash(element.label)
+    const currentBox = hashMap.get(hash)
+    const labelInBox = currentBox.findIndex((elem) => elem.label === element.label)
 
-        if(!hashMap.has(hash)) {
-            hashMap.set(hash, [])
-        }
+    if (labelInBox !== -1 && element.lens === null) {
+      currentBox.splice(labelInBox, 1)
+    } else if (labelInBox !== -1) {
+      currentBox.splice(labelInBox, 1, element)
+    } else if (element.lens !== null) {
+      currentBox.push(element)
+    }
 
-        const currentBox = hashMap.get(hash)
+    hashMap.set(hash, currentBox)
+  })
 
-        const labelInBox = currentBox.findIndex(elem => elem.label === element.label)
-
-        if(labelInBox !== -1 && element.lens === null) {
-            currentBox.splice(labelInBox, 1)
-        } else if(labelInBox !== -1) {
-            currentBox.splice(labelInBox, 1, element)
-        } else if(element.lens !== null) {
-            currentBox.push(element)
-        }
-
-        hashMap.set(hash, currentBox)
-    })
-
-    return calculateFocusingPower(hashMap)
+  return calculateFocusingPower(hashMap)
 }
 
 /* Tests */

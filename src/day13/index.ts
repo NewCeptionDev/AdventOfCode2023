@@ -95,9 +95,8 @@ const findReflectionPoint = (pattern: string[], fixSmudges: boolean): number => 
 
   if (horizontalReflection !== -1) {
     return horizontalReflection * 100
-  } 
-    return findVerticalReflection(pattern, fixSmudges)
-  
+  }
+  return findVerticalReflection(pattern, fixSmudges)
 }
 
 const goA = (input: string) => {
