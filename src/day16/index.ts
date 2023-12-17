@@ -228,7 +228,8 @@ const getNextBeam = (map: string[], beam: Beam): Beam[] => {
   return []
 }
 
-const isValidPosition = (map: string[], beam: Beam): boolean => beam.y >= 0 && beam.y < map.length && beam.x >= 0 && beam.x < map[beam.y].length
+const isValidPosition = (map: string[], beam: Beam): boolean =>
+  beam.y >= 0 && beam.y < map.length && beam.x >= 0 && beam.x < map[beam.y].length
 
 const getCountOfEnergizedTiles = (map: string[], startingBeam: Beam): number => {
   const visited: Map<number, number[]> = new Map<number, number[]>()
@@ -241,7 +242,7 @@ const getCountOfEnergizedTiles = (map: string[], startingBeam: Beam): number => 
 
     beams.forEach((beam) => {
       if (isValidPosition(map, beam)) {
-        const cacheString = `${beam.x  },${  beam.y  },${  beam.direction}`
+        const cacheString = `${beam.x},${beam.y},${beam.direction}`
 
         if (!cache.has(cacheString)) {
           if (!visited.has(beam.y)) {
